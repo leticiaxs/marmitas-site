@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Admin • Marmitas</title>
+  <style>
+    body{font-family:Arial;margin:0;background:#f6f6f6;padding:18px}
+    .card{max-width:980px;margin:auto;background:#fff;border-radius:14px;padding:18px;box-shadow:0 10px 22px rgba(0,0,0,.08)}
+    input,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:12px}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .row>div{flex:1;min-width:180px}
+    table{width:100%;border-collapse:collapse;margin-top:14px}
+    th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:14px}
+    button{padding:10px 12px;border:0;border-radius:12px;background:#111;color:#fff;cursor:pointer}
+    .muted{color:#666;font-size:13px}
+    .danger{background:#ef4444}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Cadastro de Marmitas</h2>
+    <div class="muted">Isso edita a aba <b>Marmitas</b> na planilha.</div>
+
+    <div class="row" style="margin-top:12px">
+      <div>
+        <label>Admin Key*</label>
+        <input id="adminkey" placeholder="admin-2026">
+      </div>
+      <div>
+        <label>ID (vazio = criar novo)</label>
+        <input id="id" placeholder="ex: 12">
+      </div>
+    </div>
+
+    <div class="row">
+      <div style="flex:2;min-width:260px">
+        <label>Nome*</label>
+        <input id="nome" placeholder="ex: Talharim tradicional com frango">
+      </div>
+      <div>
+        <label>Categoria</label>
+        <input id="categoria" placeholder="ex: Talharim">
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Preço</label>
+        <input id="preco" type="number" step="0.01" value="0">
+      </div>
+      <div>
+        <label>Ordem</label>
+        <input id="ordem" type="number" value="9999">
+      </div>
+      <div>
+        <label>Ativo</label>
+        <select id="ativo">
+          <option value="true" selected>Sim</option>
+          <option value="false">Não</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <div><button id="salvar">Salvar / Atualizar</button></div>
+      <div><button id="recarregar" style="background:#333">Recarregar lista</button></div>
+    </div>
+
+    <div id="status" class="muted" style="margin-top:10px"></div>
+
+    <h3 style="margin-top:18px">Itens ativos</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Ordem</th><th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+<script>
+  const API_BASE = "https://marmitas-api.onrender.com";
+  const statusEl = document.getElementById("status");
+  const tbody = document.getElementById("tbody");
+
+  function s(msg){ statusEl.textContent = msg || ""; }
+
+  async function loadMenu(){
+    s("Carregando...");
+    const r = await fetch(API_BASE + "/api/menu");
+    const data = await r.json();
+    if(!data.ok) { s("Falha ao carregar"); return; }
+
+    tbody.innerHTML = data.itens.map(it => `
+      <tr>
+        <td>${it.id}</td>
+        <td>${it.nome}</td>
+        <td>${it.categoria || ""}</td>
+        <td>${(it.preco || 0).toFixed(2)}</td>
+        <td>${it.ordem}</td>
+        <td>
+          <button onclick="fill(${it.id}, ${JSON.stringify(it.nome)}, ${JSON.stringify(it.categoria||"")}, ${it.preco||0}, ${it.ordem})">Editar</button>
+          <button class="danger" onclick="deactivate(${it.id})">Desativar</button>
+        </td>
+      </tr>
+    `).join("");
+
+    s("OK");
+  }
+
+  window.fill = (id,nome,cat,preco,ordem) => {
+    document.getElementById("id").value = id;
+    document.getElementById("nome").value = nome;
+    document.getElementById("categoria").value = cat;
+    document.getElementById("preco").value = preco;
+    document.getElementById("ordem").value = ordem;
+    document.getElementById("ativo").value = "true";
+    s("Carregado para edição.");
+  };
+
+  async function deactivate(id){
+    const key = document.getElementById("adminkey").value.trim();
+    if(!key){ s("Informe Admin Key."); return; }
+    s("Desativando...");
+    const r = await fetch(API_BASE + `/api/admin/marmita/${id}`, {
+      method:"DELETE",
+      headers: {"X-ADMIN-KEY": key}
+    });
+    const text = await r.text();
+    if(!r.ok){ s("Erro: " + text); return; }
+    s("Desativado.");
+    loadMenu();
+  }
+  window.deactivate = deactivate;
+
+  document.getElementById("salvar").addEventListener("click", async () => {
+    const key = document.getElementById("adminkey").value.trim();
+    const id = document.getElementById("id").value.trim();
+    const nome = document.getElementById("nome").value.trim();
+    const categoria = document.getElementById("categoria").value.trim();
+    const preco = parseFloat(document.getElementById("preco").value || "0");
+    const ordem = parseInt(document.getElementById("ordem").value || "9999", 10);
+    const ativo = document.getElementById("ativo").value === "true";
+
+    if(!key) return s("Informe Admin Key.");
+    if(!nome) return s("Informe Nome.");
+
+    const payload = { nome, categoria, preco, ordem, ativo };
+    if(id) payload.id = parseInt(id, 10);
+
+    s("Salvando...");
+    const r = await fetch(API_BASE + "/api/admin/marmita", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "X-ADMIN-KEY": key
+      },
+      body: JSON.stringify(payload)
+    });
+    const text = await r.text();
+    if(!r.ok){ s("Erro: " + text); return; }
+    s("Salvo!");
+    loadMenu();
+  });
+
+  document.getElementById("recarregar").addEventListener("click", loadMenu);
+  loadMenu();
+</script>
+</body>
+</html>
