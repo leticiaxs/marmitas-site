@@ -4,387 +4,282 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Pedido de Marmitas</title>
-  <meta name="theme-color" content="#111111">
-
   <style>
-    :root{
-      --bg:#0b0c10;
-      --card:#12141a;
-      --muted:#9aa3b2;
-      --text:#f4f6fb;
-      --line:rgba(255,255,255,.08);
-      --accent:#22c55e;
-      --danger:#ef4444;
-      --chip:#1b1f2a;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      background:linear-gradient(180deg,#0b0c10 0%, #0b0c10 40%, #07080c 100%);
-      color:var(--text);
-      padding:18px;
-    }
-    .wrap{max-width:980px;margin:0 auto}
-    .topbar{
-      display:flex;justify-content:space-between;align-items:center;gap:12px;
-      padding:14px 14px;border:1px solid var(--line);border-radius:18px;
-      background:rgba(18,20,26,.7); backdrop-filter: blur(10px);
-      position:sticky; top:10px; z-index:10;
-    }
-    .brand{
-      display:flex;flex-direction:column;gap:2px
-    }
-    .brand h1{font-size:16px;margin:0}
-    .brand small{color:var(--muted)}
-    .badge{
-      display:flex;align-items:center;gap:8px;
-      padding:10px 12px;border-radius:14px;
-      background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.3);
-      white-space:nowrap;
-    }
-    .badge b{font-size:16px}
-    .grid{
-      display:grid; gap:14px; margin-top:14px;
-      grid-template-columns: 1fr;
-    }
-    @media(min-width:900px){
-      .grid{grid-template-columns: 360px 1fr;}
-    }
-    .card{
-      background:rgba(18,20,26,.7);
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:14px;
-      backdrop-filter: blur(10px);
-    }
-    .card h2{margin:0 0 10px;font-size:14px;color:#dbe2f4;letter-spacing:.2px}
-    label{display:block;margin:10px 0 6px;font-size:13px;color:#dbe2f4}
-    input, textarea{
-      width:100%; padding:11px 12px;border-radius:14px;
-      border:1px solid var(--line); background:#0d0f15; color:var(--text);
-      outline:none;
-    }
-    input::placeholder, textarea::placeholder{color:#6b7383}
-    textarea{resize:vertical; min-height:88px}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .row > div{flex:1; min-width:160px}
-    .tools{
-      display:flex;gap:10px;flex-wrap:wrap
-    }
-    .search{
-      flex:1; min-width:220px;
-      display:flex; align-items:center; gap:8px;
-      padding:10px 12px;border-radius:14px;
-      border:1px solid var(--line); background:#0d0f15;
-    }
-    .search input{border:none;background:transparent;padding:0}
-    .chips{display:flex;gap:8px;flex-wrap:wrap}
-    .chip{
-      background:var(--chip); border:1px solid var(--line);
-      color:#cfd6e6; padding:9px 10px;border-radius:999px;
-      cursor:pointer; user-select:none; font-size:13px;
-    }
-    .chip.active{border-color:rgba(34,197,94,.6); background:rgba(34,197,94,.14)}
-    .list{display:flex;flex-direction:column;gap:10px}
-    .item{
-      display:flex;justify-content:space-between;align-items:center;gap:12px;
-      border:1px solid var(--line); border-radius:16px;
-      padding:12px; background:rgba(13,15,21,.65);
-    }
-    .item .name{font-weight:650; font-size:14px; line-height:1.2}
-    .item .meta{font-size:12px;color:var(--muted); margin-top:4px}
-    .qty{
-      display:flex;align-items:center;gap:8px;
-      background:#0d0f15;border:1px solid var(--line);
-      padding:6px;border-radius:14px;
-    }
-    .btn{
-      border:1px solid var(--line); background:#0d0f15;color:var(--text);
-      border-radius:12px; padding:10px 12px; cursor:pointer;
-      font-weight:600;
-    }
-    .btn:active{transform:translateY(1px)}
-    .btnPlus{border-color:rgba(34,197,94,.45)}
-    .btnMinus{border-color:rgba(255,255,255,.18)}
-    .qtyNum{
-      width:34px;text-align:center;font-weight:750
-    }
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-    .primary{
-      background:linear-gradient(180deg, rgba(34,197,94,.95), rgba(22,163,74,.95));
-      border-color:rgba(34,197,94,.6);
-      color:#04120a;
-      flex:1; min-width:220px;
-      padding:12px 14px; border-radius:14px;
-      font-size:15px;
-    }
-    .secondary{flex:1; min-width:220px}
-    .status{margin-top:10px;font-size:13px;color:#dbe2f4}
-    .status.ok{color:var(--accent)}
-    .status.err{color:var(--danger)}
-    .hint{color:var(--muted);font-size:12px;line-height:1.4}
-    .footerHint{margin-top:8px}
+    body{font-family:Arial;background:#f6f6f6;margin:0;padding:24px}
+    .card{max-width:980px;margin:auto;background:#fff;border-radius:14px;padding:20px;box-shadow:0 10px 22px rgba(0,0,0,.08)}
+    input,textarea,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:12px}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    label{display:block;margin:10px 0 6px;font-size:14px}
+    .hint{color:#666;font-size:13px;margin:10px 0 14px}
+    .tools{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+    .tools > div{flex:1;min-width:220px}
+    .item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border:1px solid #eee;border-radius:12px;margin:10px 0}
+    .name{font-weight:700}
+    .meta{font-size:12px;color:#666;margin-top:4px}
+    .qtyBox{display:flex;align-items:center;gap:8px}
+    .qty{width:110px}
+    .btn{padding:12px;border:0;border-radius:12px;background:#111;color:#fff;font-size:16px;cursor:pointer}
+    .btn.secondary{background:#333}
+    .topline{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+    .pill{padding:8px 10px;border-radius:999px;background:#f1f1f1;font-weight:700}
+    .status{margin-top:10px;font-size:14px}
+    .ok{color:#16a34a}
+    .err{color:#dc2626}
+    .sep{height:1px;background:#eee;margin:14px 0}
   </style>
 </head>
-
 <body>
-<div class="wrap">
+  <div class="card">
+    <div class="topline">
+      <h2 style="margin:0">🍱 Pedido de Marmitas Congeladas</h2>
+      <div class="pill">
+        Total itens: <span id="totalItens">0</span>
+        <span id="totalReaisWrap" style="display:none"> • R$ <span id="totalReais">0,00</span></span>
+      </div>
+    </div>
 
-  <div class="topbar">
-    <div class="brand">
-      <h1>🍱 Pedido de Marmitas Congeladas</h1>
-      <small>Escolha as quantidades e envie.</small>
+    <div class="hint">
+      Selecione as quantidades e envie. O pedido será gravado automaticamente na planilha.
     </div>
-    <div class="badge">
-      <span>Total</span>
-      <b id="totalTop">0</b>
+
+    <div class="row">
+      <div style="flex:1;min-width:260px">
+        <label>Nome completo*</label>
+        <input id="nome" autocomplete="name" />
+      </div>
+      <div style="flex:1;min-width:260px">
+        <label>WhatsApp*</label>
+        <input id="whatsapp" autocomplete="tel" />
+      </div>
     </div>
+
+    <label>Observações</label>
+    <textarea id="obs" rows="4" placeholder="Ex.: sem cebola, sem pimenta..."></textarea>
+
+    <div class="sep"></div>
+
+    <div class="tools">
+      <div>
+        <label>Buscar</label>
+        <input id="busca" placeholder="Digite para filtrar..." />
+      </div>
+      <div>
+        <label>Categoria</label>
+        <select id="categoria"></select>
+      </div>
+    </div>
+
+    <h3 style="margin-top:16px">Cardápio</h3>
+    <div id="loading" class="hint">Carregando cardápio...</div>
+    <div id="lista"></div>
+
+    <button class="btn" id="enviar">Enviar pedido</button>
+    <button class="btn secondary" id="limpar" style="margin-top:10px">Novo pedido</button>
+
+    <div id="status" class="status"></div>
   </div>
-
-  <div class="grid">
-
-    <!-- Dados do cliente -->
-    <div class="card">
-      <h2>Dados do cliente</h2>
-
-      <div class="row">
-        <div>
-          <label>Nome completo *</label>
-          <input id="nome" placeholder="Ex.: Maria da Silva" autocomplete="name">
-        </div>
-        <div>
-          <label>WhatsApp *</label>
-          <input id="whatsapp" placeholder="(99) 99999-9999" inputmode="tel" autocomplete="tel">
-          <div class="hint footerHint">Dica: só números também funciona.</div>
-        </div>
-      </div>
-
-      <label>Observações</label>
-      <textarea id="obs" placeholder="Ex.: sem cebola, sem pimenta..."></textarea>
-
-      <div class="actions">
-        <button class="btn primary" id="enviar">Enviar pedido</button>
-        <button class="btn secondary" id="limpar">Novo pedido</button>
-      </div>
-
-      <div id="status" class="status"></div>
-      <div class="hint footerHint">
-        Se o envio demorar, pode ser o servidor “acordando” (plano grátis). Aguarde alguns segundos.
-      </div>
-    </div>
-
-    <!-- Lista de marmitas -->
-    <div class="card">
-      <h2>Marmitas</h2>
-
-      <div class="tools">
-        <div class="search">
-          🔎 <input id="busca" placeholder="Buscar prato...">
-        </div>
-        <div class="chips" id="chips"></div>
-      </div>
-
-      <div style="height:10px"></div>
-
-      <div class="list" id="lista"></div>
-    </div>
-
-  </div>
-</div>
 
 <script>
-  // ✅ SEU BACKEND
-  const API_URL = "https://marmitas-api.onrender.com/api/pedido";
-  const API_KEY = "marmita2026"; // <- confirme se é a mesma do Render
+  // ✅ BACKEND
+  const API_BASE = "https://marmitas-api.onrender.com";
+  const API_URL  = API_BASE + "/api/pedido";
+  const MENU_URL = API_BASE + "/api/menu";
+  const API_KEY  = "marmita2026"; // mesma do Render
 
-  // Cardápio com categorias (sem numeração)
-  const MENU = [
-    {cat:"Arroz e Feijão", name:"Arroz, feijão e carne moída"},
-    {cat:"Arroz e Feijão", name:"Arroz, feijão e frango"},
-    {cat:"Arroz e Feijão", name:"Arroz, feijão e carne de panela"},
+  // ✅ Se quiser somar R$ no topo, deixe true e cadastre preco na planilha Marmitas.
+  const MOSTRAR_TOTAL_REAIS = true;
 
-    {cat:"Purê", name:"Purê com carne moída"},
-    {cat:"Purê", name:"Purê com frango"},
-
-    {cat:"Nhoque", name:"Nhoque com carne moída"},
-    {cat:"Nhoque", name:"Nhoque com frango"},
-
-    {cat:"Aipim", name:"Aipim temperado com carne moída"},
-    {cat:"Aipim", name:"Aipim com carne de panela"},
-
-    {cat:"Batata doce", name:"Batata doce com carne moída"},
-    {cat:"Batata doce", name:"Batata doce com frango"},
-
-    {cat:"Talharim tradicional", name:"Talharim tradicional com frango"},
-    {cat:"Talharim tradicional", name:"Talharim tradicional com carne moída"},
-
-    {cat:"Talharim de espinafre", name:"Talharim de espinafre com carne moída"},
-    {cat:"Talharim de espinafre", name:"Talharim de espinafre com frango"},
-  ];
-
-  const state = {
-    filter: "Todas",
-    search: "",
-    qty: Object.fromEntries(MENU.map(i => [i.name, 0]))
-  };
+  // Estado
+  let menu = [];            // itens do backend
+  let quant = {};           // { nome: qtd }
+  let categorias = ["Todas"];
 
   const listaEl = document.getElementById("lista");
-  const chipsEl = document.getElementById("chips");
+  const loadingEl = document.getElementById("loading");
+  const catEl = document.getElementById("categoria");
   const buscaEl = document.getElementById("busca");
-  const totalTopEl = document.getElementById("totalTop");
+  const totalItensEl = document.getElementById("totalItens");
+  const totalReaisWrap = document.getElementById("totalReaisWrap");
+  const totalReaisEl = document.getElementById("totalReais");
   const statusEl = document.getElementById("status");
 
-  const categories = ["Todas", ...Array.from(new Set(MENU.map(i => i.cat)))];
-
-  function formatPhone(v){
-    const digits = (v || "").replace(/\D/g, "").slice(0, 11);
-    const d = digits;
-    if (d.length <= 2) return d ? `(${d}` : "";
-    if (d.length <= 7) return `(${d.slice(0,2)}) ${d.slice(2)}`;
-    return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
-  }
-
-  function total(){
-    return Object.values(state.qty).reduce((a,b)=>a+(b||0),0);
-  }
-
-  function setStatus(msg, kind){
+  function setStatus(msg, cls){
+    statusEl.className = "status " + (cls || "");
     statusEl.textContent = msg || "";
-    statusEl.className = "status" + (kind ? ` ${kind}` : "");
   }
 
-  function renderChips(){
-    chipsEl.innerHTML = categories.map(c => `
-      <div class="chip ${state.filter===c ? "active":""}" data-cat="${c}">${c}</div>
-    `).join("");
-    chipsEl.querySelectorAll(".chip").forEach(ch => {
-      ch.addEventListener("click", () => {
-        state.filter = ch.dataset.cat;
-        render();
-      });
-    });
+  function totalItens(){
+    return Object.values(quant).reduce((a,b)=>a+(b||0),0);
   }
 
-  function render(){
-    totalTopEl.textContent = total();
+  function totalReais(){
+    let t = 0;
+    for(const it of menu){
+      const q = quant[it.nome] || 0;
+      t += q * (Number(it.preco) || 0);
+    }
+    return t;
+  }
 
-    const q = state.search.trim().toLowerCase();
-    const items = MENU.filter(i => {
-      const okCat = state.filter === "Todas" ? true : i.cat === state.filter;
-      const okSearch = q ? i.name.toLowerCase().includes(q) : true;
+  function fmtBRL(v){
+    return (v || 0).toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  function updateTotals(){
+    totalItensEl.textContent = totalItens();
+    if(MOSTRAR_TOTAL_REAIS){
+      totalReaisWrap.style.display = "inline";
+      totalReaisEl.textContent = fmtBRL(totalReais());
+    }
+  }
+
+  function renderCategorias(){
+    catEl.innerHTML = categorias.map(c => `<option value="${c}">${c}</option>`).join("");
+  }
+
+  function renderLista(){
+    const q = (buscaEl.value || "").trim().toLowerCase();
+    const cat = catEl.value || "Todas";
+
+    const filtered = menu.filter(it => {
+      const okCat = (cat === "Todas") ? true : (it.categoria === cat);
+      const okSearch = q ? it.nome.toLowerCase().includes(q) : true;
       return okCat && okSearch;
     });
 
-    listaEl.innerHTML = items.map(i => {
-      const v = state.qty[i.name] || 0;
+    listaEl.innerHTML = filtered.map((it, i) => {
+      const v = quant[it.nome] || 0;
+      const preco = Number(it.preco) || 0;
+      const meta = (it.categoria || "") + (preco ? ` • R$ ${fmtBRL(preco)}` : "");
       return `
         <div class="item">
           <div>
-            <div class="name">${i.name}</div>
-            <div class="meta">${i.cat}</div>
+            <div class="name">${it.nome}</div>
+            <div class="meta">${meta}</div>
           </div>
-
-          <div class="qty">
-            <button class="btn btnMinus" data-act="minus" data-name="${i.name}">−</button>
-            <div class="qtyNum" id="q_${cssSafe(i.name)}">${v}</div>
-            <button class="btn btnPlus" data-act="plus" data-name="${i.name}">+</button>
+          <div class="qtyBox">
+            <div style="font-size:12px;color:#666">Qtd</div>
+            <input class="qty" type="number" min="0" value="${v}" data-nome="${escapeHtml(it.nome)}">
           </div>
         </div>
       `;
     }).join("");
 
-    listaEl.querySelectorAll("button[data-act]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const name = btn.dataset.name;
-        const act = btn.dataset.act;
-        const cur = state.qty[name] || 0;
-        const next = act === "plus" ? cur + 1 : Math.max(0, cur - 1);
-        state.qty[name] = next;
-        totalTopEl.textContent = total();
-        const el = document.getElementById(`q_${cssSafe(name)}`);
-        if (el) el.textContent = String(next);
+    // Bind inputs
+    listaEl.querySelectorAll('input.qty').forEach(inp => {
+      inp.addEventListener("input", () => {
+        const nome = unescapeHtml(inp.getAttribute("data-nome") || "");
+        const v = Math.max(0, parseInt(inp.value || "0", 10) || 0);
+        quant[nome] = v;
+        updateTotals();
       });
     });
+
+    updateTotals();
   }
 
-  function cssSafe(s){
-    return btoa(unescape(encodeURIComponent(s))).replace(/=+/g,"");
+  // Util simples para armazenar nome no atributo sem quebrar HTML
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+  function unescapeHtml(str){
+    const t = document.createElement("textarea");
+    t.innerHTML = str;
+    return t.value;
   }
 
-  renderChips();
-  render();
+  async function carregarMenu(){
+    loadingEl.style.display = "block";
+    listaEl.innerHTML = "";
+    setStatus("", "");
+    try{
+      const r = await fetch(MENU_URL);
+      const data = await r.json();
+      if(!data.ok) throw new Error("Falha ao carregar menu");
 
-  buscaEl.addEventListener("input", (e) => {
-    state.search = e.target.value || "";
-    render();
-  });
+      menu = data.itens || [];
+      quant = Object.fromEntries(menu.map(it => [it.nome, 0]));
 
-  const whatsappEl = document.getElementById("whatsapp");
-  whatsappEl.addEventListener("input", (e) => {
-    e.target.value = formatPhone(e.target.value);
-  });
+      const cats = Array.from(new Set(menu.map(i => i.categoria).filter(Boolean)));
+      categorias = ["Todas", ...cats];
+      renderCategorias();
+
+      loadingEl.style.display = "none";
+      renderLista();
+    }catch(e){
+      loadingEl.style.display = "none";
+      setStatus("❌ Não foi possível carregar o cardápio. Verifique a API.", "err");
+      console.error(e);
+    }
+  }
+
+  buscaEl.addEventListener("input", renderLista);
+  catEl.addEventListener("change", renderLista);
 
   document.getElementById("limpar").addEventListener("click", () => {
-    state.qty = Object.fromEntries(MENU.map(i => [i.name, 0]));
     document.getElementById("nome").value = "";
     document.getElementById("whatsapp").value = "";
     document.getElementById("obs").value = "";
     buscaEl.value = "";
-    state.search = "";
-    state.filter = "Todas";
-    renderChips();
-    render();
+    catEl.value = "Todas";
+    for(const k in quant) quant[k] = 0;
+    renderLista();
     setStatus("", "");
   });
 
   document.getElementById("enviar").addEventListener("click", async () => {
-    setStatus("", "");
-
     const nome = document.getElementById("nome").value.trim();
-    const whatsapp = (document.getElementById("whatsapp").value || "").trim();
+    const whatsapp = document.getElementById("whatsapp").value.trim();
     const obs = document.getElementById("obs").value.trim();
 
-    const totalQtd = total();
-    if (!nome || !whatsapp){
+    if(!nome || !whatsapp){
       setStatus("⚠️ Preencha Nome e WhatsApp.", "err");
       return;
     }
-    if (totalQtd <= 0){
+
+    const total = totalItens();
+    if(total <= 0){
       setStatus("⚠️ Selecione pelo menos 1 marmita.", "err");
       return;
     }
 
-    // Monta payload igual ao backend espera
+    // Formato que o backend espera: { nome, whatsapp, obs, quantidades: { "Nome": qtd } }
     const quantidades = {};
-    for (const [k,v] of Object.entries(state.qty)){
-      if ((v||0) > 0) quantidades[k] = v;
+    for(const [k,v] of Object.entries(quant)){
+      if((v||0) > 0) quantidades[k] = v;
     }
 
     try{
       setStatus("Enviando...", "");
       const r = await fetch(API_URL, {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "X-API-KEY": API_KEY,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-KEY": API_KEY
         },
         body: JSON.stringify({ nome, whatsapp, obs, quantidades })
       });
 
       const text = await r.text();
+      if(!r.ok) throw new Error(`HTTP ${r.status} - ${text}`);
+
       let data = {};
       try{ data = JSON.parse(text); }catch{}
 
-      if(!r.ok){
-        throw new Error(`HTTP ${r.status} - ${text}`);
-      }
-
-      setStatus(`✅ Pedido enviado! Total: ${data.total ?? totalQtd}`, "ok");
+      setStatus(`✅ Pedido enviado! Total: ${data.total ?? total}`, "ok");
     }catch(e){
       console.error(e);
-      setStatus(`❌ Erro ao enviar. ${e.message || ""}`, "err");
+      setStatus(`❌ Erro ao enviar: ${e.message}`, "err");
     }
   });
+
+  // Start
+  carregarMenu();
 </script>
 </body>
 </html>
