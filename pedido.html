@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pedido de Marmitas</title>
+  <style>
+    body{font-family:Arial;background:#f6f6f6;margin:0;padding:18px}
+    .card{max-width:980px;margin:auto;background:#fff;border-radius:14px;padding:18px;box-shadow:0 10px 22px rgba(0,0,0,.08)}
+    input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:12px}
+    label{display:block;margin:10px 0 6px}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .row>div{flex:1;min-width:220px}
+    .item{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid #eee;border-radius:12px;padding:12px;margin:10px 0}
+    .name{font-weight:700}
+    .meta{font-size:12px;color:#666;margin-top:4px}
+    .qty{width:100px}
+    button{padding:12px;border:0;border-radius:12px;background:#111;color:#fff;font-weight:700;cursor:pointer;width:100%}
+    .muted{color:#666;font-size:13px}
+    .ok{color:#16a34a}
+    .err{color:#dc2626}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="top">
+      <h2 style="margin:0" id="titulo">🍱 Pedido de Marmitas</h2>
+      <div class="muted">Total: <b id="total">0</b></div>
+    </div>
+    <div class="muted" id="sub"></div>
+
+    <div class="row" style="margin-top:12px">
+      <div>
+        <label>Nome*</label>
+        <input id="nome" autocomplete="name">
+      </div>
+      <div>
+        <label>WhatsApp*</label>
+        <input id="whatsapp" autocomplete="tel">
+      </div>
+    </div>
+
+    <label>Observações</label>
+    <textarea id="obs" rows="3" placeholder="Ex.: sem cebola, sem pimenta..."></textarea>
+
+    <h3 style="margin-top:16px">Cardápio</h3>
+    <div id="lista"></div>
+
+    <button id="enviar">Enviar pedido</button>
+    <div id="status" class="muted" style="margin-top:10px"></div>
+  </div>
+
+<script>
+  const API_BASE = "https://marmitas-api.onrender.com";
+  const API_KEY  = "marmita2026"; // mesma do Render
+
+  const params = new URLSearchParams(location.search);
+  const semana = params.get("semana"); // YYYY-MM-DD
+
+  const tituloEl = document.getElementById("titulo");
+  const subEl = document.getElementById("sub");
+  const listaEl = document.getElementById("lista");
+  const totalEl = document.getElementById("total");
+  const statusEl = document.getElementById("status");
+
+  let itens = [];
+  let quant = {};
+
+  function s(msg, cls){
+    statusEl.className = "muted " + (cls || "");
+    statusEl.textContent = msg || "";
+  }
+
+  function updateTotal(){
+    const t = Object.values(quant).reduce((a,b)=>a+(b||0),0);
+    totalEl.textContent = t;
+    return t;
+  }
+
+  async function load(){
+    if(!semana){
+      s("Link inválido: parâmetro 'semana' ausente.", "err");
+      return;
+    }
+    s("Carregando cardápio...");
+    const r = await fetch(API_BASE + "/api/cardapio/" + encodeURIComponent(semana));
+    const text = await r.text();
+    if(!r.ok){ s("Cardápio não encontrado.", "err"); return; }
+
+    const data = JSON.parse(text);
+    itens = data.itens || [];
+    quant = Object.fromEntries(itens.map(i => [i.nome, 0]));
+
+    tituloEl.textContent = data.titulo || "🍱 Pedido de Marmitas";
+    subEl.textContent = `Semana: ${data.semana_id}`;
+
+    listaEl.innerHTML = itens.map(i => `
+      <div class="item">
+        <div>
+          <div class="name">${i.nome}</div>
+          <div class="meta">${i.categoria || ""}</div>
+        </div>
+        <div>
+          <div class="muted" style="font-size:12px">Qtd</div>
+          <input class="qty" type="number" min="0" value="0" data-nome="${encodeURIComponent(i.nome)}">
+        </div>
+      </div>
+    `).join("");
+
+    listaEl.querySelectorAll("input.qty").forEach(inp => {
+      inp.addEventListener("input", () => {
+        const nome = decodeURIComponent(inp.dataset.nome);
+        const v = Math.max(0, parseInt(inp.value || "0", 10) || 0);
+        quant[nome] = v;
+        updateTotal();
+      });
+    });
+
+    updateTotal();
+    s("");
+  }
+
+  document.getElementById("enviar").addEventListener("click", async () => {
+    const nome = document.getElementById("nome").value.trim();
+    const whatsapp = document.getElementById("whatsapp").value.trim();
+    const obs = document.getElementById("obs").value.trim();
+
+    if(!nome || !whatsapp) return s("Preencha Nome e WhatsApp.", "err");
+
+    const total = updateTotal();
+    if(total <= 0) return s("Selecione pelo menos 1 item.", "err");
+
+    const quantidades = {};
+    for(const [k,v] of Object.entries(quant)){
+      if((v||0) > 0) quantidades[k] = v;
+    }
+
+    s("Enviando...");
+    const r = await fetch(API_BASE + "/api/pedido", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "X-API-KEY": API_KEY
+      },
+      body: JSON.stringify({ semana_id: semana, nome, whatsapp, obs, quantidades })
+    });
+
+    const text = await r.text();
+    if(!r.ok) return s("Erro ao enviar: " + text, "err");
+
+    const data = JSON.parse(text);
+    s("✅ Pedido enviado! Total: " + (data.total ?? total), "ok");
+  });
+
+  load();
+</script>
+</body>
+</html>
