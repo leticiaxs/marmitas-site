@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Cardápio da Semana</title>
+  <style>
+    body{font-family:Arial;margin:0;background:#f6f6f6;padding:18px}
+    .card{max-width:1100px;margin:auto;background:#fff;border-radius:14px;padding:18px;box-shadow:0 10px 22px rgba(0,0,0,.08)}
+    input,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:12px}
+    button{padding:10px 12px;border:0;border-radius:12px;background:#111;color:#fff;cursor:pointer;font-weight:700}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .row>div{flex:1;min-width:220px}
+    .muted{color:#666;font-size:13px}
+    .list{margin-top:14px;display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:900px){.list{grid-template-columns:1fr 1fr}}
+    .item{border:1px solid #eee;border-radius:12px;padding:12px;display:flex;gap:10px;align-items:flex-start}
+    .item b{display:block}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .linkbox{margin-top:12px;padding:12px;border:1px dashed #ccc;border-radius:12px;background:#fafafa}
+    a.small{color:#111;text-decoration:none;font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <h2 style="margin:0">📅 Cardápio da Semana</h2>
+      <a class="small" href="./index.html">← Início</a>
+    </div>
+    <div class="muted">Selecione as marmitas cadastradas e gere o link do cliente.</div>
+
+    <div class="row" style="margin-top:12px">
+      <div>
+        <label>Admin Key*</label>
+        <input id="adminkey" placeholder="admin-2026">
+      </div>
+      <div>
+        <label>Semana (YYYY-MM-DD)*</label>
+        <input id="semana" placeholder="2026-02-19">
+      </div>
+      <div>
+        <label>Título</label>
+        <input id="titulo" placeholder="Cardápio da Semana">
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Buscar marmita</label>
+        <input id="busca" placeholder="Digite para filtrar...">
+      </div>
+      <div>
+        <label>Categoria</label>
+        <select id="categoria"></select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="salvar">Salvar cardápio e gerar link</button>
+      <button id="recarregar" style="background:#333">Recarregar marmitas</button>
+    </div>
+
+    <div id="status" class="muted" style="margin-top:10px"></div>
+
+    <div id="linkbox" class="linkbox" style="display:none">
+      <div><b>Link para enviar ao cliente:</b></div>
+      <div style="margin-top:6px">
+        <input id="link" readonly>
+      </div>
+      <div style="margin-top:8px">
+        <button id="copiar">Copiar link</button>
+        <a id="abrir" class="small" target="_blank" style="margin-left:10px">Abrir</a>
+      </div>
+    </div>
+
+    <h3 style="margin-top:18px">Marmitas (selecione as que entram no cardápio)</h3>
+    <div id="lista" class="list"></div>
+  </div>
+
+<script>
+  const API_BASE = "https://marmitas-api.onrender.com";
+  const statusEl = document.getElementById("status");
+  const listaEl = document.getElementById("lista");
+  const buscaEl = document.getElementById("busca");
+  const catEl = document.getElementById("categoria");
+  const linkBox = document.getElementById("linkbox");
+  const linkInput = document.getElementById("link");
+  const abrirA = document.getElementById("abrir");
+
+  let marmitas = [];
+  let selected = new Set();
+  let categorias = ["Todas"];
+
+  function s(msg){ statusEl.textContent = msg || ""; }
+
+  function renderCategorias(){
+    catEl.innerHTML = categorias.map(c => `<option value="${c}">${c}</option>`).join("");
+  }
+
+  function renderLista(){
+    const q = (buscaEl.value||"").trim().toLowerCase();
+    const c = catEl.value || "Todas";
+
+    const filtered = marmitas.filter(m => {
+      const okCat = c==="Todas" ? true : (m.categoria===c);
+      const okSearch = q ? m.nome.toLowerCase().includes(q) : true;
+      return okCat && okSearch;
+    });
+
+    listaEl.innerHTML = filtered.map(m => {
+      const checked = selected.has(m.id) ? "checked" : "";
+      return `
+        <label class="item">
+          <input type="checkbox" data-id="${m.id}" ${checked} style="margin-top:3px">
+          <div>
+            <b>${m.nome}</b>
+            <div class="muted">${m.categoria || "Sem categoria"} • ID ${m.id}</div>
+          </div>
+        </label>
+      `;
+    }).join("");
+
+    listaEl.querySelectorAll("input[type=checkbox]").forEach(cb => {
+      cb.addEventListener("change", () => {
+        const id = parseInt(cb.dataset.id, 10);
+        if(cb.checked) selected.add(id); else selected.delete(id);
+      });
+    });
+  }
+
+  async function loadMarmitas(){
+    const key = document.getElementById("adminkey").value.trim();
+    if(!key){ s("Informe Admin Key para carregar."); return; }
+
+    s("Carregando marmitas...");
+    linkBox.style.display="none";
+    const r = await fetch(API_BASE + "/api/admin/marmitas", {
+      headers: {"X-ADMIN-KEY": key}
+    });
+    const text = await r.text();
+    if(!r.ok){ s("Erro: " + text); return; }
+
+    const data = JSON.parse(text);
+    marmitas = (data.itens || []).filter(x => x.ativo);
+    categorias = ["Todas", ...Array.from(new Set(marmitas.map(m => m.categoria).filter(Boolean)))];
+    renderCategorias();
+    renderLista();
+    s("OK");
+  }
+
+  buscaEl.addEventListener("input", renderLista);
+  catEl.addEventListener("change", renderLista);
+
+  document.getElementById("recarregar").addEventListener("click", loadMarmitas);
+
+  document.getElementById("salvar").addEventListener("click", async () => {
+    const key = document.getElementById("adminkey").value.trim();
+    const semana = document.getElementById("semana").value.trim();
+    const titulo = document.getElementById("titulo").value.trim() || "Cardápio da Semana";
+
+    if(!key) return s("Informe Admin Key.");
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(semana)) return s("Semana inválida. Use YYYY-MM-DD.");
+    if(selected.size === 0) return s("Selecione pelo menos 1 marmita.");
+
+    s("Salvando cardápio...");
+    linkBox.style.display="none";
+
+    const payload = {
+      semana_id: semana,
+      titulo,
+      marmita_ids: Array.from(selected)
+    };
+
+    const r = await fetch(API_BASE + "/api/admin/cardapio-semana", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "X-ADMIN-KEY": key
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const text = await r.text();
+    if(!r.ok){ s("Erro: " + text); return; }
+
+    const data = JSON.parse(text);
+    s("✅ Cardápio salvo!");
+    linkInput.value = data.link_cliente;
+    abrirA.href = data.link_cliente;
+    linkBox.style.display="block";
+  });
+
+  document.getElementById("copiar").addEventListener("click", async () => {
+    try{
+      await navigator.clipboard.writeText(linkInput.value);
+      s("✅ Link copiado!");
+    }catch{
+      s("Copie manualmente o link.");
+    }
+  });
+</script>
+</body>
+</html>
