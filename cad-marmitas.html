@@ -5,168 +5,782 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Admin • Marmitas</title>
   <style>
-    body{font-family:Arial;margin:0;background:#f6f6f6;padding:18px}
-    .card{max-width:980px;margin:auto;background:#fff;border-radius:14px;padding:18px;box-shadow:0 10px 22px rgba(0,0,0,.08)}
-    input,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:12px}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .row>div{flex:1;min-width:180px}
-    table{width:100%;border-collapse:collapse;margin-top:14px}
-    th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:14px}
-    button{padding:10px 12px;border:0;border-radius:12px;background:#111;color:#fff;cursor:pointer}
-    .muted{color:#666;font-size:13px}
-    .danger{background:#ef4444}
+    :root{
+      --bg:#0b1220;
+      --panel:#0f172a;
+      --card:#0b1326;
+      --muted:#94a3b8;
+      --text:#e5e7eb;
+      --line:rgba(148,163,184,.18);
+      --brand:#22c55e;
+      --brand2:#16a34a;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(1200px 600px at 10% 0%, rgba(34,197,94,.18), transparent 55%),
+        radial-gradient(900px 500px at 90% 20%, rgba(59,130,246,.18), transparent 55%),
+        linear-gradient(180deg, #070b14 0%, #070b14 60%, #050812 100%);
+      color:var(--text);
+      padding:22px;
+    }
+
+    .wrap{max-width:1120px;margin:0 auto}
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:14px; margin-bottom:16px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+    }
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background:
+        linear-gradient(145deg, rgba(34,197,94,.95), rgba(34,197,94,.25)),
+        radial-gradient(18px 18px at 30% 30%, rgba(255,255,255,.55), transparent 70%);
+      box-shadow: 0 18px 40px rgba(34,197,94,.18);
+    }
+    h1{font-size:20px;margin:0;letter-spacing:.2px}
+    .subtitle{margin:2px 0 0;color:var(--muted);font-size:13px}
+
+    .grid{
+      display:grid;
+      grid-template-columns: 420px 1fr;
+      gap:16px;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(15,23,42,.85), rgba(7,11,20,.85));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card-header{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+    }
+    .card-title{
+      display:flex;flex-direction:column;gap:2px;
+    }
+    .card-title b{font-size:14px}
+    .card-title span{font-size:12px;color:var(--muted)}
+    .card-body{padding:16px}
+
+    .row{display:grid; gap:10px; margin-bottom:10px}
+    .row.cols-2{grid-template-columns:1fr 1fr}
+    .row.cols-3{grid-template-columns:1fr 1fr 1fr}
+    @media (max-width: 520px){
+      .row.cols-2,.row.cols-3{grid-template-columns:1fr}
+    }
+
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+    .field{position:relative;}
+    input, select{
+      width:100%;
+      padding:11px 12px;
+      border:1px solid rgba(148,163,184,.22);
+      border-radius:14px;
+      background: rgba(2,6,23,.55);
+      color:var(--text);
+      outline:none;
+      transition: border .15s, box-shadow .15s, transform .05s;
+    }
+    input::placeholder{color:rgba(148,163,184,.55)}
+    input:focus, select:focus{
+      border-color: rgba(34,197,94,.6);
+      box-shadow: 0 0 0 4px rgba(34,197,94,.12);
+    }
+
+    .hint{
+      margin-top:6px;
+      font-size:12px;
+      color:rgba(148,163,184,.85);
+    }
+
+    .toolbar{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    }
+    .btn{
+      border:1px solid rgba(148,163,184,.18);
+      background: rgba(2,6,23,.35);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      display:inline-flex; align-items:center; gap:8px;
+      transition: transform .05s, background .15s, border .15s, opacity .15s;
+      user-select:none;
+    }
+    .btn:hover{background: rgba(2,6,23,.55)}
+    .btn:active{transform: translateY(1px)}
+    .btn.primary{
+      background: linear-gradient(145deg, rgba(34,197,94,.95), rgba(22,163,74,.65));
+      border-color: rgba(34,197,94,.35);
+      color:#06120a;
+      font-weight:700;
+    }
+    .btn.primary:hover{opacity:.95}
+    .btn.danger{
+      background: rgba(239,68,68,.14);
+      border-color: rgba(239,68,68,.35);
+      color:#fecaca;
+    }
+    .btn.small{padding:8px 10px;border-radius:12px;font-size:13px}
+    .btn.ghost{
+      background: transparent;
+      border-color: rgba(148,163,184,.18);
+      color: rgba(229,231,235,.9);
+    }
+
+    .pill{
+      font-size:12px;
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.18);
+      color:rgba(229,231,235,.85);
+      background: rgba(2,6,23,.25);
+      white-space:nowrap;
+    }
+    .pill.ok{border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.12)}
+    .pill.warn{border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.10)}
+    .pill.bad{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10)}
+
+    .status{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(148,163,184,.14);
+      background: rgba(2,6,23,.35);
+      font-size:13px;
+      color:rgba(229,231,235,.9);
+      min-height:40px;
+    }
+    .spinner{
+      width:14px;height:14px;border-radius:50%;
+      border:2px solid rgba(148,163,184,.35);
+      border-top-color: rgba(34,197,94,.95);
+      animation: spin .9s linear infinite;
+      display:none;
+    }
+    .status.loading .spinner{display:inline-block}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .table-wrap{overflow:auto}
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      min-width: 620px;
+    }
+    thead th{
+      position:sticky;
+      top:0;
+      background: rgba(2,6,23,.65);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--line);
+      color:rgba(229,231,235,.85);
+      text-align:left;
+      font-size:12px;
+      letter-spacing:.3px;
+      padding:12px 12px;
+    }
+    tbody td{
+      padding:12px 12px;
+      border-bottom:1px solid rgba(148,163,184,.10);
+      font-size:14px;
+      color:rgba(229,231,235,.92);
+      vertical-align:middle;
+    }
+    tbody tr:hover td{background: rgba(148,163,184,.05)}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
+    .right{text-align:right}
+    .actions{display:flex; gap:8px; flex-wrap:wrap}
+
+    .searchbar{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      padding:12px 16px;
+      border-bottom:1px solid var(--line);
+      background: rgba(2,6,23,.25);
+    }
+    .searchbar .field{flex:1; min-width:220px}
+    .note{color:var(--muted);font-size:12px}
+
+    /* Modal */
+    .modal-backdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.55);
+      display:none; align-items:center; justify-content:center;
+      padding:18px;
+    }
+    .modal{
+      width:min(520px, 100%);
+      border-radius: 18px;
+      border:1px solid rgba(148,163,184,.18);
+      background: linear-gradient(180deg, rgba(15,23,42,.96), rgba(2,6,23,.92));
+      box-shadow: 0 30px 80px rgba(0,0,0,.55);
+      overflow:hidden;
+    }
+    .modal h3{margin:0;font-size:16px}
+    .modal p{margin:8px 0 0;color:rgba(148,163,184,.95);font-size:13px;line-height:1.4}
+    .modal .hd{padding:14px 16px;border-bottom:1px solid rgba(148,163,184,.14)}
+    .modal .bd{padding:14px 16px}
+    .modal .ft{padding:14px 16px;border-top:1px solid rgba(148,163,184,.14);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>Cadastro de Marmitas</h2>
-    <div class="muted">Isso edita a aba <b>Marmitas</b> na planilha.</div>
+  <div class="wrap">
 
-    <div class="row" style="margin-top:12px">
-      <div>
-        <label>Admin Key*</label>
-        <input id="adminkey" placeholder="admin-2026">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Cadastro de Marmitas</h1>
+          <div class="subtitle">Administração do cardápio (aba <b>Marmitas</b> na planilha)</div>
+        </div>
       </div>
-      <div>
-        <label>ID (vazio = criar novo)</label>
-        <input id="id" placeholder="ex: 12">
-      </div>
+      <div class="pill" id="pillApi">API: <span class="mono">/api/admin/marmitas</span></div>
     </div>
 
-    <div class="row">
-      <div style="flex:2;min-width:260px">
-        <label>Nome*</label>
-        <input id="nome" placeholder="ex: Talharim tradicional com frango">
+    <div class="grid">
+
+      <!-- FORM -->
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <b>Login + editar / criar item</b>
+            <span>Faça login para obter o token (JWT) e então salve/edite marmitas.</span>
+          </div>
+          <span class="pill warn" id="pillDraft">Rascunho</span>
+        </div>
+
+        <div class="card-body">
+
+          <!-- LOGIN -->
+          <div class="row cols-2">
+            <div class="field">
+              <label for="username">Usuário</label>
+              <input id="username" placeholder="admin" autocomplete="username" />
+            </div>
+            <div class="field">
+              <label for="password">Senha</label>
+              <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+            </div>
+          </div>
+
+          <div class="toolbar" style="margin-top:6px">
+            <button class="btn" id="btnLogin" type="button" title="Fazer login e salvar token">
+              🔐 Login
+            </button>
+            <button class="btn ghost" id="btnLogout" type="button" title="Limpar token">
+              🚪 Sair
+            </button>
+            <span class="pill" id="pillAuth">Token: <span class="mono" id="tokenHint">não</span></span>
+          </div>
+
+          <div class="row cols-2" style="margin-top:14px">
+            <div class="field" style="grid-column:1 / -1">
+              <label for="token">Token (Bearer)</label>
+              <input id="token" placeholder="(será preenchido após login)" autocomplete="off" />
+              <div class="hint">O token fica salvo neste navegador (localStorage) até você clicar em “Sair”.</div>
+            </div>
+          </div>
+
+          <hr style="border:none;border-top:1px solid rgba(148,163,184,.14);margin:14px 0">
+
+          <!-- FORM MARMITA -->
+          <div class="row cols-2">
+            <div class="field">
+              <label for="id">ID</label>
+              <input id="id" placeholder="(vazio = criar novo)" inputmode="numeric" />
+              <div class="hint">Se preencher, atualiza esse ID.</div>
+            </div>
+
+            <div class="field">
+              <label for="ordem">Ordem</label>
+              <input id="ordem" type="number" value="9999" inputmode="numeric" />
+            </div>
+          </div>
+
+          <div class="row cols-2" style="margin-top:10px">
+            <div class="field" style="grid-column:1 / -1">
+              <label for="nome">Nome*</label>
+              <input id="nome" placeholder="Ex: Talharim tradicional com frango" />
+            </div>
+          </div>
+
+          <div class="row cols-3">
+            <div class="field">
+              <label for="ativo">Ativo</label>
+              <select id="ativo">
+                <option value="true" selected>Sim</option>
+                <option value="false">Não</option>
+              </select>
+            </div>
+            <div class="field" style="grid-column: span 2">
+              <div class="hint" style="margin-top:24px">
+                Sem categoria e sem preço (backend atual usa: id, nome, ativo, ordem).
+              </div>
+            </div>
+          </div>
+
+          <div class="toolbar" style="margin-top:12px">
+            <button class="btn primary" id="salvar" type="button" title="Salvar / Atualizar">
+              ✅ Salvar
+            </button>
+            <button class="btn" id="limpar" type="button" title="Limpar formulário">
+              🧹 Limpar
+            </button>
+            <button class="btn ghost" id="recarregar" type="button" title="Recarregar lista">
+              🔄 Recarregar
+            </button>
+          </div>
+
+          <div class="status" id="status" style="margin-top:12px">
+            <span class="spinner" aria-hidden="true"></span>
+            <span id="statusMsg">Pronto.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- LIST -->
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <b>Itens (admin)</b>
+            <span>Lista retornada por <span class="mono">/api/admin/marmitas</span>.</span>
+          </div>
+          <span class="pill ok" id="pillCount">0 itens</span>
+        </div>
+
+        <div class="searchbar">
+          <div class="field">
+            <label for="q">Buscar (nome / id)</label>
+            <input id="q" placeholder="Digite para filtrar..." />
+          </div>
+          <div class="field" style="max-width:220px">
+            <label for="sort">Ordenar</label>
+            <select id="sort">
+              <option value="ordem">Ordem</option>
+              <option value="nome">Nome</option>
+              <option value="id">ID</option>
+            </select>
+          </div>
+          <div class="note" id="noteUpdated">—</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:80px">ID</th>
+                <th>Nome</th>
+                <th class="right" style="width:110px">Ordem</th>
+                <th style="width:110px">Ativo</th>
+                <th style="width:210px">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- MODAL CONFIRM -->
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal">
+      <div class="hd">
+        <h3 id="modalTitle">Confirmar ação</h3>
+        <p id="modalText">—</p>
       </div>
-      <div>
-        <label>Categoria</label>
-        <input id="categoria" placeholder="ex: Talharim">
+      <div class="ft">
+        <button class="btn" id="modalCancel" type="button">Cancelar</button>
+        <button class="btn danger" id="modalConfirm" type="button">Desativar</button>
       </div>
     </div>
-
-    <div class="row">
-      <div>
-        <label>Preço</label>
-        <input id="preco" type="number" step="0.01" value="0">
-      </div>
-      <div>
-        <label>Ordem</label>
-        <input id="ordem" type="number" value="9999">
-      </div>
-      <div>
-        <label>Ativo</label>
-        <select id="ativo">
-          <option value="true" selected>Sim</option>
-          <option value="false">Não</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="row" style="margin-top:10px">
-      <div><button id="salvar">Salvar / Atualizar</button></div>
-      <div><button id="recarregar" style="background:#333">Recarregar lista</button></div>
-    </div>
-
-    <div id="status" class="muted" style="margin-top:10px"></div>
-
-    <h3 style="margin-top:18px">Itens ativos</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Ordem</th><th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
   </div>
 
 <script>
   const API_BASE = "https://marmitas-api.onrender.com";
-  const statusEl = document.getElementById("status");
+
+  const statusBox = document.getElementById("status");
+  const statusMsg = document.getElementById("statusMsg");
   const tbody = document.getElementById("tbody");
+  const pillCount = document.getElementById("pillCount");
+  const pillDraft = document.getElementById("pillDraft");
+  const noteUpdated = document.getElementById("noteUpdated");
 
-  function s(msg){ statusEl.textContent = msg || ""; }
+  const q = document.getElementById("q");
+  const sort = document.getElementById("sort");
 
-  async function loadMenu(){
-    s("Carregando...");
-    const r = await fetch(API_BASE + "/api/menu");
-    const data = await r.json();
-    if(!data.ok) { s("Falha ao carregar"); return; }
+  const modalBackdrop = document.getElementById("modalBackdrop");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalText = document.getElementById("modalText");
+  const modalCancel = document.getElementById("modalCancel");
+  const modalConfirm = document.getElementById("modalConfirm");
 
-    tbody.innerHTML = data.itens.map(it => `
+  const tokenInput = document.getElementById("token");
+  const tokenHint = document.getElementById("tokenHint");
+  const pillAuth = document.getElementById("pillAuth");
+
+  let itensCache = [];
+  let pendingDeactivateId = null;
+
+  function setStatus(msg, type="info", loading=false){
+    statusMsg.textContent = msg || "";
+    statusBox.classList.toggle("loading", !!loading);
+
+    if(type==="ok"){
+      statusBox.style.borderColor = "rgba(34,197,94,.25)";
+    } else if(type==="warn"){
+      statusBox.style.borderColor = "rgba(245,158,11,.25)";
+    } else if(type==="bad"){
+      statusBox.style.borderColor = "rgba(239,68,68,.25)";
+    } else {
+      statusBox.style.borderColor = "rgba(148,163,184,.14)";
+    }
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function tokenShort(t){
+    if(!t) return "não";
+    if(t.length <= 18) return "sim";
+    return t.slice(0,10) + "…" + t.slice(-6);
+  }
+
+  function setToken(token){
+    token = (token || "").trim();
+    tokenInput.value = token;
+    localStorage.setItem("marmitas_jwt", token);
+    tokenHint.textContent = tokenShort(token);
+    pillAuth.className = "pill " + (token ? "ok" : "warn");
+  }
+
+  function getToken(){
+    return (tokenInput.value || localStorage.getItem("marmitas_jwt") || "").trim();
+  }
+
+  function authHeaders(){
+    const t = getToken();
+    if(!t) return null;
+    return { "Authorization": "Bearer " + t };
+  }
+
+  function markDraft(){
+    const id = document.getElementById("id").value.trim();
+    pillDraft.textContent = id ? "Editando ID " + id : "Novo item";
+    pillDraft.className = "pill " + (id ? "warn" : "ok");
+  }
+
+  function clearForm(){
+    document.getElementById("id").value = "";
+    document.getElementById("nome").value = "";
+    document.getElementById("ordem").value = "9999";
+    document.getElementById("ativo").value = "true";
+    markDraft();
+    setStatus("Formulário limpo.", "ok");
+  }
+
+  window.fill = (id, nome, ordem, ativo) => {
+    document.getElementById("id").value = String(id ?? "");
+    document.getElementById("nome").value = nome || "";
+    document.getElementById("ordem").value = String(ordem ?? 9999);
+    document.getElementById("ativo").value = String(!!ativo);
+    markDraft();
+    setStatus("Item carregado para edição.", "ok");
+    window.scrollTo({top:0, behavior:"smooth"});
+  };
+
+  function getFilteredSorted(){
+    const term = (q.value || "").trim().toLowerCase();
+    const key = sort.value;
+
+    let list = [...itensCache];
+
+    if(term){
+      list = list.filter(it =>
+        String(it.nome||"").toLowerCase().includes(term) ||
+        String(it.id||"").includes(term)
+      );
+    }
+
+    const cmp = {
+      ordem: (a,b)=>(a.ordem??9999)-(b.ordem??9999),
+      nome: (a,b)=>String(a.nome||"").localeCompare(String(b.nome||""),"pt-BR"),
+      id: (a,b)=>(a.id??0)-(b.id??0),
+    }[key];
+
+    list.sort(cmp);
+    return list;
+  }
+
+  function render(){
+    const list = getFilteredSorted();
+    pillCount.textContent = `${list.length} itens`;
+
+    tbody.innerHTML = list.map(it => `
       <tr>
-        <td>${it.id}</td>
-        <td>${it.nome}</td>
-        <td>${it.categoria || ""}</td>
-        <td>${(it.preco || 0).toFixed(2)}</td>
-        <td>${it.ordem}</td>
+        <td class="mono">${it.id}</td>
+        <td>${escapeHtml(it.nome || "")}</td>
+        <td class="right mono">${it.ordem ?? ""}</td>
         <td>
-          <button onclick="fill(${it.id}, ${JSON.stringify(it.nome)}, ${JSON.stringify(it.categoria||"")}, ${it.preco||0}, ${it.ordem})">Editar</button>
-          <button class="danger" onclick="deactivate(${it.id})">Desativar</button>
+          <span class="pill ${it.ativo ? "ok" : "bad"}">${it.ativo ? "Ativo" : "Inativo"}</span>
+        </td>
+        <td>
+          <div class="actions">
+            <button class="btn small" onclick="fill(${it.id}, ${JSON.stringify(it.nome)}, ${Number(it.ordem??9999)}, ${it.ativo ? "true" : "false"})">✏️ Editar</button>
+            <button class="btn small danger" onclick="confirmDeactivate(${it.id}, ${JSON.stringify(it.nome||"")})">🗑️ Desativar</button>
+          </div>
         </td>
       </tr>
     `).join("");
 
-    s("OK");
+    if(!list.length){
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="color:rgba(148,163,184,.9);padding:18px">
+            Nenhum item encontrado (ou você ainda não fez login).
+          </td>
+        </tr>`;
+    }
   }
 
-  window.fill = (id,nome,cat,preco,ordem) => {
-    document.getElementById("id").value = id;
-    document.getElementById("nome").value = nome;
-    document.getElementById("categoria").value = cat;
-    document.getElementById("preco").value = preco;
-    document.getElementById("ordem").value = ordem;
-    document.getElementById("ativo").value = "true";
-    s("Carregado para edição.");
+  function openModal({title, text, confirmText="Confirmar", danger=false}){
+    modalTitle.textContent = title;
+    modalText.textContent = text;
+    modalConfirm.textContent = confirmText;
+    modalConfirm.classList.toggle("danger", !!danger);
+    modalBackdrop.style.display = "flex";
+    modalBackdrop.setAttribute("aria-hidden","false");
+  }
+  function closeModal(){
+    modalBackdrop.style.display = "none";
+    modalBackdrop.setAttribute("aria-hidden","true");
+    pendingDeactivateId = null;
+  }
+
+  modalCancel.addEventListener("click", closeModal);
+  modalBackdrop.addEventListener("click", (e)=>{ if(e.target === modalBackdrop) closeModal(); });
+
+  async function login(){
+    const username = (document.getElementById("username").value || "").trim();
+    const password = (document.getElementById("password").value || "").trim();
+    if(!username || !password){
+      return setStatus("Informe usuário e senha.", "warn");
+    }
+
+    setStatus("Fazendo login…", "info", true);
+
+    try{
+      const r = await fetch(API_BASE + "/api/login", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({username, password})
+      });
+
+      const data = await r.json().catch(()=>null);
+
+      if(!r.ok){
+        const detail = (data && data.detail) ? data.detail : (await r.text());
+        setStatus("Login falhou: " + (detail || "erro"), "bad");
+        return;
+      }
+
+      if(!data || !data.access_token){
+        setStatus("Login falhou: resposta inválida.", "bad");
+        return;
+      }
+
+      setToken(data.access_token);
+      setStatus("Login OK. Token salvo.", "ok");
+      await loadMarmitas();
+    }catch(err){
+      setStatus("Erro de rede no login.", "bad");
+    }finally{
+      statusBox.classList.remove("loading");
+    }
+  }
+
+  function logout(){
+    setToken("");
+    setStatus("Token removido. Você saiu.", "ok");
+    itensCache = [];
+    render();
+  }
+
+  async function loadMarmitas(){
+    setStatus("Carregando lista…", "info", true);
+
+    const headers = authHeaders();
+    if(!headers){
+      setStatus("Faça login para carregar a lista.", "warn");
+      itensCache = [];
+      render();
+      statusBox.classList.remove("loading");
+      return;
+    }
+
+    try{
+      const r = await fetch(API_BASE + "/api/admin/marmitas", { headers });
+      const data = await r.json().catch(()=>null);
+
+      if(!r.ok || !data || !data.ok){
+        const detail = (data && data.detail) ? data.detail : "token inválido/expirado?";
+        setStatus("Falha ao carregar lista: " + detail, "bad");
+        return;
+      }
+
+      itensCache = Array.isArray(data.itens) ? data.itens : [];
+      render();
+      noteUpdated.textContent = "Atualizado em " + new Date().toLocaleString("pt-BR");
+      setStatus("Lista carregada.", "ok");
+      markDraft();
+    }catch(err){
+      setStatus("Erro de rede ao carregar lista.", "bad");
+    }finally{
+      statusBox.classList.remove("loading");
+    }
+  }
+
+  window.confirmDeactivate = (id, nome) => {
+    pendingDeactivateId = id;
+    openModal({
+      title: "Desativar marmita",
+      text: `Tem certeza que deseja desativar o item #${id} (${nome})?`,
+      confirmText: "Desativar",
+      danger: true
+    });
   };
 
-  async function deactivate(id){
-    const key = document.getElementById("adminkey").value.trim();
-    if(!key){ s("Informe Admin Key."); return; }
-    s("Desativando...");
-    const r = await fetch(API_BASE + `/api/admin/marmita/${id}`, {
-      method:"DELETE",
-      headers: {"X-ADMIN-KEY": key}
-    });
-    const text = await r.text();
-    if(!r.ok){ s("Erro: " + text); return; }
-    s("Desativado.");
-    loadMenu();
-  }
-  window.deactivate = deactivate;
+  modalConfirm.addEventListener("click", async () => {
+    const id = pendingDeactivateId;
+    if(!id) return closeModal();
+
+    const headers = authHeaders();
+    if(!headers){
+      closeModal();
+      return setStatus("Faça login (token) antes.", "warn");
+    }
+
+    closeModal();
+    setStatus("Desativando…", "info", true);
+
+    try{
+      const r = await fetch(API_BASE + `/api/admin/marmita/${id}`, {
+        method:"DELETE",
+        headers
+      });
+
+      if(!r.ok){
+        const data = await r.json().catch(()=>null);
+        const detail = (data && data.detail) ? data.detail : (await r.text());
+        setStatus("Erro ao desativar: " + (detail || "erro"), "bad");
+        return;
+      }
+
+      setStatus("Desativado com sucesso.", "ok");
+      await loadMarmitas();
+    }catch(err){
+      setStatus("Erro de rede ao desativar.", "bad");
+    }finally{
+      statusBox.classList.remove("loading");
+    }
+  });
 
   document.getElementById("salvar").addEventListener("click", async () => {
-    const key = document.getElementById("adminkey").value.trim();
     const id = document.getElementById("id").value.trim();
     const nome = document.getElementById("nome").value.trim();
-    const categoria = document.getElementById("categoria").value.trim();
-    const preco = parseFloat(document.getElementById("preco").value || "0");
     const ordem = parseInt(document.getElementById("ordem").value || "9999", 10);
     const ativo = document.getElementById("ativo").value === "true";
 
-    if(!key) return s("Informe Admin Key.");
-    if(!nome) return s("Informe Nome.");
+    if(!nome) return setStatus("Informe Nome.", "warn");
 
-    const payload = { nome, categoria, preco, ordem, ativo };
+    const headers = authHeaders();
+    if(!headers) return setStatus("Faça login (token) antes de salvar.", "warn");
+
+    const payload = { nome, ordem, ativo };
     if(id) payload.id = parseInt(id, 10);
 
-    s("Salvando...");
-    const r = await fetch(API_BASE + "/api/admin/marmita", {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "X-ADMIN-KEY": key
-      },
-      body: JSON.stringify(payload)
-    });
-    const text = await r.text();
-    if(!r.ok){ s("Erro: " + text); return; }
-    s("Salvo!");
-    loadMenu();
+    setStatus("Salvando…", "info", true);
+
+    try{
+      const r = await fetch(API_BASE + "/api/admin/marmita", {
+        method:"POST",
+        headers:{
+          ...headers,
+          "Content-Type":"application/json",
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await r.json().catch(()=>null);
+
+      if(!r.ok){
+        const detail = (data && data.detail) ? data.detail : "erro";
+        setStatus("Erro ao salvar: " + detail, "bad");
+        return;
+      }
+
+      setStatus("Salvo! ✅", "ok");
+      clearForm();
+      await loadMarmitas();
+    }catch(err){
+      setStatus("Erro de rede ao salvar.", "bad");
+    }finally{
+      statusBox.classList.remove("loading");
+    }
   });
 
-  document.getElementById("recarregar").addEventListener("click", loadMenu);
-  loadMenu();
+  document.getElementById("recarregar").addEventListener("click", loadMarmitas);
+  document.getElementById("limpar").addEventListener("click", clearForm);
+
+  document.getElementById("btnLogin").addEventListener("click", login);
+  document.getElementById("btnLogout").addEventListener("click", logout);
+
+  ["id","nome","ordem","ativo"].forEach(x=>{
+    document.getElementById(x).addEventListener("input", markDraft);
+    document.getElementById(x).addEventListener("change", markDraft);
+  });
+
+  q.addEventListener("input", render);
+  sort.addEventListener("change", render);
+
+  // Token manual (se colar)
+  tokenInput.addEventListener("input", () => {
+    setToken(tokenInput.value);
+  });
+
+  // Start
+  (function init(){
+    document.getElementById("username").value = "admin";
+    const t = localStorage.getItem("marmitas_jwt") || "";
+    setToken(t);
+    markDraft();
+    render();
+    if(t) loadMarmitas();
+  })();
 </script>
 </body>
 </html>
